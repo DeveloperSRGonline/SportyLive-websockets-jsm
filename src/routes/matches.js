@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createMatchSchema, listMatchesQuerySchema, matchIdParamSchema, updateScoreSchema } from '../validation/matches.js';
+import { createMatchSchema, listMatchesQuerySchema } from '../validation/matches.js';
 import { matches } from '../db/schema.js';
 import { db } from '../db/db.js';
 import { getMatchStatus } from '../utils/match-status.js';
@@ -16,7 +16,7 @@ matchRouter.get('/', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       error: 'Invalid query',
-      details: parsed.error.errors,
+      details: parsed.error.issues,
     });
   }
 
@@ -33,7 +33,7 @@ matchRouter.get('/', async (req, res) => {
     // once you get data return it to frontend
     return res.status(200).json({data})
   }catch (e) {
-    res.status(400).json({
+    res.status(500).json({
       error:'Failed to list Matches'
     })
   }
@@ -46,7 +46,7 @@ matchRouter.post('/', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       error: 'Invalid payload',
-      details: parsed.error.errors,
+      details: parsed.error.issues,
     });
   }
 
@@ -70,9 +70,9 @@ matchRouter.post('/', async (req, res) => {
       data: event,
     });
   } catch (err) {
+    console.error('Failed to create match:', err);
     res.status(500).json({
       error: 'Failed to create match',
-      details: err.message,
     });
   }
 });
